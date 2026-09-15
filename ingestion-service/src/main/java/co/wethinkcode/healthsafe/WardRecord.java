@@ -5,16 +5,13 @@ public class WardRecord {
     public String wing;
     public String department;
     public Integer bedsAvailable;
+    public String notes;
 
-    public WardRecord(
-            String wardId,
-            String wing,
-            String department,
-            Integer bedsAvailable) {
-
+    public WardRecord(String wardId, String wing, String department, Integer bedsAvailable, String notes){
         this.wardId = wardId;
         this.wing = wing;
         this.department = department;
         this.bedsAvailable = bedsAvailable;
+        this.notes = notes;
     }
 }

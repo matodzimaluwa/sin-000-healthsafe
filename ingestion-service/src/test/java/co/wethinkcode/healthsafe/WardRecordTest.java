@@ -13,12 +13,15 @@ class WardRecordTest {
                 "W-01",
                 "East Wing",
                 "Cardiology",
-                3
+                3,
+                "No notes"
+
         );
 
         assertEquals("W-01", ward.wardId);
         assertEquals("East Wing", ward.wing);
         assertEquals("Cardiology", ward.department);
         assertEquals(3, ward.bedsAvailable);
+        assertEquals("No notes", ward.notes);
     }
 }
