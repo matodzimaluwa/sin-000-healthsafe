@@ -93,3 +93,5 @@ curl http://localhost:7030/health   # -> OK
 
 To add real tests, add JUnit 5 + the Surefire plugin to `pom.xml`, put tests under
 `src/test/java/co/wethinkcode/healthsafe/`, and run `mvn test`.
+
+Stage 1 in progress: ingestion-service
