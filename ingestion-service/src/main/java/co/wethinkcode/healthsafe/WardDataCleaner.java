@@ -21,12 +21,17 @@ public class WardDataCleaner {
                 String department = clean(parts[2]);
                 BedsResult beds = parseBeds(parts[3]);
 
+                String notes = beds.note();
+                if (wing.isEmpty()) {
+                    notes = (notes == null) ? "wing was missing" : notes + "; wing was missing";
+                }
+
                 rawRows.add(new WardRecord(
                         normaliseId(wardId),
                         normaliseWing(wing),
                         normaliseDept(department),
                         beds.value(),
-                        beds.note()
+                        notes
                 ));
 
             }
@@ -56,7 +61,7 @@ public class WardDataCleaner {
     private static String normaliseDept(String dept){
         String lower = dept.toLowerCase();
         if (lower.contains("paediatric") || lower.contains("pediatric")){
-            return "Pediatrics";
+            return "Paediatrics";
         }
         if (lower.equals("icu")) {
             return "ICU";
