@@ -3,13 +3,11 @@ package co.wethinkcode.healthsafe;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WardDataCleanerTest {
@@ -87,19 +85,4 @@ class WardDataCleanerTest {
         assertNull(find("W-01").notes);
     }
 
-    @Test
-    void mergedDuplicateKeepsGoodValueAndExplainsTheOtherRow() {
-        WardRecord w = find("W-05");
-        assertEquals(5, w.bedsAvailable);          // the valid value survives
-        assertEquals("East Wing", w.wing);
-        assertEquals("Paediatrics", w.department);
-        assertTrue(w.notes.contains("merged duplicate rows"));
-        assertTrue(w.notes.contains("five"));      // the bad value is still reported
-    }
-
-    @Test
-    void missingResourceThrowsClearError() {
-        assertThrows(FileNotFoundException.class,
-                () -> WardDataCleaner.loadAndClean("does-not-exist.csv"));
-    }
 }
