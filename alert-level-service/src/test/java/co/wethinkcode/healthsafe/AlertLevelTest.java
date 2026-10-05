@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AlertLevelTest {
 
-    // README: Emergency Status is 0-8; a fresh service is at normal (0)
+    //Emergency Status is 0-8; a fresh service is at normal (0)
     @Test
     void startsAtZero() {
         assertEquals(0, new AlertLevel().get());
