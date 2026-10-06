@@ -31,6 +31,21 @@
       <artifactId>activemq-client</artifactId>
       <version>5.18.3</version>
     </dependency>
+
+    <!-- Jackson: reads the JSON from ward-service and alert-level-service, and lets ctx.json(...) send JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.16.1</version>
+    </dependency>
+
+    <!-- JUnit 5: for the tests in src/test/java -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
