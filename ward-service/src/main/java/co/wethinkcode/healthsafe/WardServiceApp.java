@@ -33,6 +33,9 @@ public class WardServiceApp {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(TreeSet::new));
 
+        // Sends equipment failures to the equipment-failure-queue. It only connects to the
+        // broker when the first failure is reported.
+        AlertProducer alertProducer = new AlertProducer();
         Javalin app = Javalin.create().start(7031);
 
         app.get("/health", ctx -> ctx.result("OK"));
