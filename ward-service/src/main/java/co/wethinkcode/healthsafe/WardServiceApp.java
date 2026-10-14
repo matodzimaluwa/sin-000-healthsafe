@@ -56,6 +56,16 @@ public class WardServiceApp {
 
         // List of departments
         app.get("/departments", ctx -> ctx.json(departments));
+        // Report an equipment failure on a ward. Body.
+        // The alert goes onto the equipment-failure-queue for equipment-alert-service.
+        app.post("/wards/{id}/equipment-failure", ctx -> {
+                    String id = ctx.pathParam("id").trim().toUpperCase();
+
+                    // 404 if it is not one of our wards
+                    boolean wardExists = wards.stream().anyMatch(w -> w.wardId.equals(id));
+                    if (!wardExists) {
+                        ctx.status(404).result("Ward not found: " + id);
+                        return;
     }
 
     private static List<Ward> fetchWards() {
