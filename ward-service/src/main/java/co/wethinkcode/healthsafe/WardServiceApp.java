@@ -59,16 +59,45 @@ public class WardServiceApp {
         // Report an equipment failure on a ward. Body.
         // The alert goes onto the equipment-failure-queue for equipment-alert-service.
         app.post("/wards/{id}/equipment-failure", ctx -> {
-                    String id = ctx.pathParam("id").trim().toUpperCase();
+            String id = ctx.pathParam("id").trim().toUpperCase();
 
-                    // 404 if it is not one of our wards
-                    boolean wardExists = wards.stream().anyMatch(w -> w.wardId.equals(id));
-                    if (!wardExists) {
-                        ctx.status(404).result("Ward not found: " + id);
-                        return;
+            // 404 if it is not one of our wards
+            boolean wardExists = wards.stream().anyMatch(w -> w.wardId.equals(id));
+            if (!wardExists) {
+                ctx.status(404).result("Ward not found: " + id);
+                return;
+            }
+
+            // 400 if the body is broken or has no equipment
+            EquipmentFailure failure;
+            try {
+                EquipmentFailureRequest request = ctx.bodyAsClass(EquipmentFailureRequest.class);
+                failure = new EquipmentFailure(id, request.equipment);
+            } catch (IllegalArgumentException e) {
+                ctx.status(400).result(e.getMessage());
+                return;
+            } catch (Exception e) {
+                ctx.status(400).result("body must look like {\"equipment\": \"ventilator\"}");
+                return;
+            }
+
+            try {
+                alertProducer.send(failure);
+                // 202 Accepted: the alert is on the queue, it has not been handled yet
+                ctx.status(202).result("Equipment failure reported for ward " + id);
+            } catch (JMSException e) {
+                ctx.status(503).result("Could not reach the alert queue - is the ActiveMQ broker running?");
+            } catch (JsonProcessingException e) {
+                ctx.status(500).result("Could not build the alert message");
+            }
+        });
+
+        // Close the broker connection when the service is stopped (Ctrl+C)
+        Runtime.getRuntime().addShutdownHook(new Thread(alertProducer::stop));
     }
 
-    private static List<Ward> fetchWards() {
+
+        private static List<Ward> fetchWards() {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder(URI.create(INGESTION_URL)).GET().build();
