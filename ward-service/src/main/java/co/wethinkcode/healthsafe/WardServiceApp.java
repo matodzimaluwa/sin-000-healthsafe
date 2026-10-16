@@ -36,7 +36,16 @@ public class WardServiceApp {
         // Sends equipment failures to the equipment-failure-queue. It only connects to the
         // broker when the first failure is reported.
         AlertProducer alertProducer = new AlertProducer();
+
+        // Keeps the latest staffing update for each ward. The listener fills it from the staffing-events-topic.
+        StaffingBoard staffingBoard = new StaffingBoard();
+        StaffingListener staffingListener = new StaffingListener(staffingBoard);
+
+
         Javalin app = Javalin.create().start(7031);
+
+        // Subscribe to the staffing-events-topic, the web server is already up, so a missing broker does not stop it.
+        staffingListener.start();
 
         app.get("/health", ctx -> ctx.result("OK"));
 
@@ -56,6 +65,21 @@ public class WardServiceApp {
 
         // List of departments
         app.get("/departments", ctx -> ctx.json(departments));
+
+        // The latest staffing update this ward received from the staffing-events-topic
+        app.get("/wards/{id}/staffing", ctx -> {
+            String id = ctx.pathParam("id").trim().toUpperCase();
+
+            boolean wardExists = wards.stream().anyMatch(w -> w.wardId.equals(id));
+            if (!wardExists) {
+                ctx.status(404).result("Ward not found: " + id);
+                return;
+            }
+            staffingBoard.find(id).ifPresentOrElse(
+                    update -> ctx.json(update),
+                    () -> ctx.status(404).result("No staffing update received yet for ward " + id));
+        });
+
         // Report an equipment failure on a ward. Body.
         // The alert goes onto the equipment-failure-queue for equipment-alert-service.
         app.post("/wards/{id}/equipment-failure", ctx -> {
@@ -92,12 +116,14 @@ public class WardServiceApp {
             }
         });
 
-        // Close the broker connection when the service is stopped (Ctrl+C)
-        Runtime.getRuntime().addShutdownHook(new Thread(alertProducer::stop));
+        // Close the broker connections when the service is stopped (Ctrl+C)
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            alertProducer.stop();
+            staffingListener.stop();
+        }));
     }
 
-
-        private static List<Ward> fetchWards() {
+    private static List<Ward> fetchWards() {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder(URI.create(INGESTION_URL)).GET().build();
@@ -118,7 +144,6 @@ public class WardServiceApp {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while contacting ingestion-service", e);
-
         }
     }
 }
