@@ -55,7 +55,7 @@ public class StaffingServiceApp {
                 }
                 int level = levelNode.asInt();
 
-                // 3. Work out the schedule and send it back.
+                //Work out the schedule and send it back.
                 ctx.json(new Schedule(wardId, department, level, StaffingRules.doctorsOnCall(level)));
 
             } catch (IllegalArgumentException e) {
