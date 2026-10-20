@@ -28,8 +28,16 @@ cleanup through synchronous REST calls to asynchronous MQ decoupling and alertin
 Plus [`common/`](common) (no port) — the shared ActiveMQ broker and MQ config notes
 for `staffing-events-topic`: Staffing updates are broadcast as Events via the broker to decouple the frontend from the Staffing Service.
 
-**Status:** scaffold only — build files, Javalin bootstrap, and TODOs are in place; no
-business logic has been implemented yet.
+**Status:** all four stages are implemented and checked end to end.
+
+| Stage | What | Where |
+|---|---|---|
+| 1 | Ingestion: the CSV is cleaned and served | `ingestion-service` |
+| 2 | REST services: wards, Emergency Status, on-call schedules | `ward-service`, `alert-level-service`, `staffing-service` |
+| 3 | Topic: `staffing-service` publishes staffing updates, `ward-service` subscribes (durable) | `staffing-events-topic` |
+| 4 | Queue: `ward-service` reports equipment failures, `equipment-alert-service` collects them | `equipment-failure-queue` |
+
+To run everything: start the broker (`docker compose up -d`, in `common/`), then `ingestion-service`, then the other four services. Each service's README lists its endpoints.
 
 ## Your task
 
@@ -147,8 +155,10 @@ cd equipment-alert-service && mvn package && java -jar target/equipment-alert-se
 
 ## Test
 
-No automated tests exist yet (this is a scaffold). Each running service exposes
-`/health`, so sanity-check manually:
+Automated tests run with `mvn test` inside each module: `ingestion-service` (9),
+`ward-service` (18), `alert-level-service` (5), `staffing-service` (12) and
+`equipment-alert-service` (10). The code that talks to the broker is checked by hand.
+Each running service also exposes `/health`, so sanity-check manually:
 
 ```
 curl http://localhost:7030/health   # -> OK
