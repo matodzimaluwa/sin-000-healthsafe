@@ -188,5 +188,4 @@ then add tests under that module's `src/test/java/...` and run:
 ```
 mvn test
 ```
-## Verification code:
-WTC-NXBEG9DN
+## Verification code: WTC-NXBEG9DN
